@@ -48,6 +48,7 @@ def read_tensor_from_image_file(file_name, input_height=299, input_width=299,
   elif file_name.endswith(".bmp"):
     image_reader = tf.image.decode_bmp(file_reader, name='bmp_reader')
   else:
+    # Decode a JPEG-encoded image to a uint8 tensor.把图片解析为张量
     image_reader = tf.image.decode_jpeg(file_reader, channels = 3,
                                         name='jpeg_reader')
   float_caster = tf.cast(image_reader, tf.float32)
@@ -78,6 +79,7 @@ if __name__ == "__main__":
   input_layer = "input"
   output_layer = "InceptionV3/Predictions/Reshape_1"
 
+  # 添加参数
   parser = argparse.ArgumentParser()
   parser.add_argument("--image", help="image to be processed")
   parser.add_argument("--graph", help="graph/model to be executed")
@@ -88,8 +90,9 @@ if __name__ == "__main__":
   parser.add_argument("--input_std", type=int, help="input std")
   parser.add_argument("--input_layer", help="name of input layer")
   parser.add_argument("--output_layer", help="name of output layer")
-  args = parser.parse_args()
-
+  args = parser.parse_args()  # 解析参数
+  
+  # 检测参数并设置变量
   if args.graph:
     model_file = args.graph
   if args.image:
@@ -108,8 +111,10 @@ if __name__ == "__main__":
     input_layer = args.input_layer
   if args.output_layer:
     output_layer = args.output_layer
-
+  
+  # 加载本地模型
   graph = load_graph(model_file)
+  # 加载图片
   t = read_tensor_from_image_file(file_name,
                                   input_height=input_height,
                                   input_width=input_width,
@@ -122,6 +127,7 @@ if __name__ == "__main__":
   output_operation = graph.get_operation_by_name(output_name);
 
   with tf.Session(graph=graph) as sess:
+    # 因为这里输入和输出都只有一张图片，所以取第0个元素。
     results = sess.run(output_operation.outputs[0],
                       {input_operation.outputs[0]: t})
   results = np.squeeze(results)
